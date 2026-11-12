@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy Study</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f4f4; color: #1d1d1d; margin: 0; padding: 20px; line-height: 1.5; }
+  .box { background: white; max-width: 700px; margin: 0 auto 16px; padding: 20px; border-radius: 8px; }
+  .page { display: none; }
+  .row { display: flex; gap: 16px; max-width: 1250px; margin: 0 auto; align-items: flex-start; }
+  .row > .box { margin: 0; }
+  #policyBox { flex: 3; max-height: 88vh; overflow-y: auto; }
+  #questionBox { flex: 2; position: sticky; top: 20px; max-height: 88vh; overflow-y: auto; }
+  button { background: #2c5f8a; color: white; border: none; padding: 9px 18px; border-radius: 6px; font-size: 15px; cursor: pointer; margin: 4px 6px 4px 0; }
+  label { display: block; padding: 3px 0; cursor: pointer; }
+  .question { border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+  .error { color: #b42318; }
+  .survey-q { margin-bottom: 18px; }
+  .survey-q p { margin: 0 0 6px; font-weight: bold; }
+  textarea { width: 100%; box-sizing: border-box; min-height: 90px; padding: 8px; font-family: inherit; font-size: 15px; border: 1px solid #bbb; border-radius: 6px; }
+
+  /* Policy text */
+  #policyText h3 { font-size: 16px; margin: 18px 0 4px; }
+  #policyText p { margin: 0 0 10px; }
+  mark.hl { background: none; color: inherit; }
+  .showHighlights mark.hl { background: #fff0a8; border-bottom: 2px solid #e0b400; padding: 1px 0; }
+  .showHighlights mark.hl.flash { background: #ffd84d; }
+
+  /* AI summary (Group B) */
+  #summary { background: #f3f7fb; border: 1px solid #cfdeec; border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; }
+  #summary h2 { margin: 0 0 4px; font-size: 18px; }
+  .aiNote { font-size: 13px; color: #555; margin: 0 0 10px; }
+  .tldr { background: white; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+  .grid h4 { margin: 6px 0 2px; font-size: 14px; }
+  .grid ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .watch { margin-top: 12px; }
+  .watch h4 { margin: 0 0 6px; font-size: 14px; }
+  .flag { background: white; border-left: 4px solid #999; border-radius: 4px; padding: 8px 10px; margin-bottom: 6px; font-size: 14px; }
+  .flag.concerning { border-left-color: #c0392b; }
+  .flag.notable { border-left-color: #e0a100; }
+  .flag .tag { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #555; }
+  .flag a { font-size: 13px; color: #2c5f8a; cursor: pointer; }
+  @media (max-width: 800px) {
+    .row { flex-direction: column; }
+    #policyBox, #questionBox { max-height: none; position: static; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- PRE-QUESTION -->
+<div class="page box" id="pre">
+  <h1>Before you start</h1>
+  <div class="survey-q">
+    <p>How often do you read an app's privacy policy before using it?</p>
+    <label><input type="radio" name="readsPolicies" value="1"> 1 – Never</label>
+    <label><input type="radio" name="readsPolicies" value="2"> 2 – Rarely</label>
+    <label><input type="radio" name="readsPolicies" value="3"> 3 – Sometimes</label>
+    <label><input type="radio" name="readsPolicies" value="4"> 4 – Most of the time</label>
+    <label><input type="radio" name="readsPolicies" value="5"> 5 – Always</label>
+  </div>
+  <p class="error" id="preError"></p>
+  <button onclick="submitPre()">Next</button>
+</div>
+
+<!-- INSTRUCTIONS -->
+<div class="page box" id="instructions">
+  <h1>Instructions</h1>
+  <p>Imagine you are thinking about using <b class="appName"></b> and want to know what it does with your information.</p>
+  <p>On the next page you will see the app's privacy policy on the left and some questions on the right. Use the policy to answer the questions.</p>
+  <button onclick="startQuiz()">Start</button>
+</div>
+
+<!-- POLICY + QUESTIONS -->
+<div class="page row" id="quiz">
+  <div class="box" id="policyBox">
+
+    <!-- AI SUMMARY (Group B only) -->
+    <div id="summary"></div>
+
+    <!-- PRIVACY POLICY -->
+    <h2><span class="appName"></span> Privacy Policy</h2>
+    <div id="policyText"></div>
+  </div>
+
+  <div class="box" id="questionBox">
+    <h2>Questions</h2>
+    <div id="questions"></div>
+    <p class="error" id="quizError"></p>
+    <button onclick="submitQuiz()">Submit answers</button>
+  </div>
+</div>
+
+<div class="page box" id="rating">
+
+  <!-- Difficulty (both groups) -->
+  <div class="survey-q">
+    <p>How difficult was it to understand how this app uses your information?</p>
+    <label><input type="radio" name="difficulty" value="1"> 1 – Very easy</label>
+    <label><input type="radio" name="difficulty" value="2"> 2 – Easy</label>
+    <label><input type="radio" name="difficulty" value="3"> 3 – Neutral</label>
+    <label><input type="radio" name="difficulty" value="4"> 4 – Difficult</label>
+    <label><input type="radio" name="difficulty" value="5"> 5 – Very difficult</label>
+  </div>
+ 
+  <!-- Written explanation (both groups) -->
+  <div class="survey-q">
+    <p>Please explain why you gave that difficulty rating.</p>
+    <textarea id="difficultyReason" placeholder="Type your answer here..."></textarea>
+  </div>
+ 
+  <!-- AI questions (Group B only) -->
+  <div id="aiQuestions" style="display:none">
+    <div class="survey-q">
+      <p>Would having an AI summary like this make you more likely to read privacy policies?</p>
+      <label><input type="radio" name="aiMoreLikely" value="1"> 1 – Much less likely</label>
+      <label><input type="radio" name="aiMoreLikely" value="2"> 2 – Less likely</label>
+      <label><input type="radio" name="aiMoreLikely" value="3"> 3 – No difference</label>
+      <label><input type="radio" name="aiMoreLikely" value="4"> 4 – More likely</label>
+      <label><input type="radio" name="aiMoreLikely" value="5"> 5 – Much more likely</label>
+    </div>
+  </div>
+ 
+  <p class="error" id="ratingError"></p>
+  <button onclick="finish()">Finish</button>
+</div>
+
+<!-- THANK YOU -->
+<div class="page box" id="done">
+  <h1>Thank you!</h1>
+  <p>Your answers have been recorded.</p>
+</div>
+
+<script>
+// Data collection
+var GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzZzkWRu44uQU6JDoLe0G0ud_wIBASu77kf4mtcIEO5gcaIhxWfTzPVjLPhBMbmA4cM/exec";
+
+// Policies 
+var POLICY_POOL = ["snapchat", "tiktok", "temu"];
+
+// QUESTIONS: 4 per policy. 
+var QUESTIONS = {
+  snapchat: [
+    {  text: "By default, how long does Snap keep Chats you send?", options: ["They are deleted the moment they are sent", "They are deleted within 24 hours after your friend reads them", "30 days", "Forever"], answer: 1 },
+    {  text: "Who does Snap share your information with?", options: ["No one", "Only your friends", "Your friends, service providers, and business partners", "Only law enforcement"], answer: 2 },
+    {  text: "What does Snap use your information for?", options: ["Only to deliver your messages", "To personalize what you see, including ads", "Nothing; it does not use your information", "Only for research papers"], answer: 1 },
+    {  text: "Does Snap use the private messages you send to friends to show you ads?", options: ["Yes", "Only Snaps saved in My Eyes Only", "No", "Only if you use My AI"], answer: 2 }
+  ],
+  tiktok: [
+    {  text: "Which of these does TikTok say it may collect?", options: ["Biometric data, like faceprints and voiceprints", "Your DNA", "Your fingerprint from the screen", "None of these"], answer: 0 },
+    {  text: "TikTok says it may collect content from your clipboard. What is that?", options: ["Your phone's calendar", "Text and images you copy on your device", "Your saved passwords", "Your photo gallery"], answer: 1 },
+    {  text: "How long does TikTok keep your information?", options: ["Exactly 1 year", "24 hours", "As long as necessary; no specific time periods are given", "It deletes everything when you log out"], answer: 2 },
+    {  text: "TikTok says it may use your information to infer:", options: ["Your age, gender, and interests", "Your credit score", "Your home's value", "Nothing; it does not infer anything"], answer: 0 }
+  ],
+  temu: [
+    {  text: "When might Temu collect health information about you?", options: ["Never", "If you send customer support details about a product-related injury", "From your fitness tracker", "From your pharmacy"], answer: 1 },
+    {  text: "Which of these does Temu share your information with?", options: ["No one outside Temu", "Only shipping companies", "Advertising and analytics partners, payment processors, and service providers", "Only your bank"], answer: 2 },
+    {  text: "What does the policy say you can opt out of?", options: ["Marketing messages from Temu", "All data collection", "Fraud checks", "Nothing"], answer: 0 },
+    {  text: "What will Temu's merchandise partners NOT receive?", options: ["Your name", "Your shipping address", "Your payment information or device data", "Your order information"], answer: 2 }
+  ]
+};
+
+// POLICIES + AI OUTPUT 
+var POLICIES = {
+ "snapchat": {
+  "app": "Snapchat",
+  "html": "<p>Effective: September 21, 2026<\/p>\n<p>Welcome to Snap Inc.’s Privacy Policy. This Policy explains how we collect and use your data and how you can control your information. Looking for a quick summary on our privacy practices? Check out this page or this video. If you’re looking for specific product privacy information, for example, how we process your Chats and Snaps, take a look at our Privacy by Product page. In addition to these documents, we also show in-app notices that provide you more information about our products and services. If you’re a SPECS user you can learn more on how we collect and use your data here.<\/p>\n<p>Transparency is one of our core values at Snap. We believe there shouldn’t be any surprises about the data we collect and how we use it — that’s why we’re upfront with how we process it. For example, we process your information to provide you a more personalized experience, including to show you content and information that is most relevant to your experience, as well as more relevant advertisements. Understanding your interests and preferences help us provide a better product experience.<\/p>\n<p>Furthermore, we believe a personalized experience should not come at the expense of your privacy. Just like in real life, there are some moments you want to share privately with your close friends, and others that you want to share publicly. That’s why from day one our philosophy has been to delete content by default and to give Snapchatters control by providing the tools that allow them to decide what happens with their content, like who to share it with or when to save it.<\/p>\n<p>This Policy covers our Snapchat app as well as our other products, services, and features, such as Bitmoji, SPECS, and our advertising and commerce initiatives. When you read “Services” in this Policy, we’re talking about all of them. Also, if you see us refer to our “Terms,” we mean the Terms of Service that you agree to when you sign up for our Services. Finally, if you see the term “Snapchatter” we are often using that as shorthand for any user of our Services.<\/p>\n<h3>Information We Collect<\/h3>\n<p>This section provides you with details on what information we collect: what you provide to us, what we collect when you use Snapchat, and information we receive from other companies or apps you’ve connected to your Snapchat account. Sometimes, we may also collect additional information, with your permission.<\/p>\n<p>When you use our Services, such as Snapchat, we collect information you provide to us, generate information when you use our Services, and in some cases receive data from others. Let’s break these down in more detail.<\/p>\n<h3>Information You Provide<\/h3>\n<p>Many of our Services require you to set up an account. To do this, we ask you to provide us with account details. When you set up your profile, you’ll also provide us with profile details (like your Bitmoji and profile picture). If you use our commerce products to buy something, like those latest sneakers, we may ask you for payment and related information (like your physical address, so we can ship the product to you, payment information, so we can process the payment, and transaction history). Based on your region, we may also use information you provide to estimate or infer your age or ask you to verify your age.<\/p>\n<p>Of course, you’ll also provide us with information you send through or save within our Services, including content and information about that content, and content you share and generate with our AI Features (content, or “Inputs,” including text, images, video, audio, precise location, and engagement, including content you share with My AI, used to generate content and responses, or “Outputs,”). We consider some of this information to be private content and communications (like Snaps and Chats with your friends, voice and video calls, and content that is saved in My Eyes Only). Or content you share with a particular audience like private &amp; friend stories (My Story set to Friends, Private Stories). On the other end of the spectrum, some of the information you send through or save within our Services may be public content that is accessible to everyone (such as Public Story content, including My Story set to Everyone, Shared Stories, and Community Stories, Spotlight or Snap Map submissions, and Public Profile information). Keep in mind that Snapchatters who view your Snaps, Chats, and any other content, can always screenshot that content, save it, or copy it outside the Snapchat app. So please don’t send messages or share content that you wouldn’t want someone to save or share.<\/p>\n<p>Lastly, when you contact Support (content and communications shared with Support) or our Safety team, or communicate with us in any other way, including through our research efforts (like responses to surveys, consumer panels, or other research questions) we’ll collect whatever information you provide or that we need to resolve your question.<\/p>\n<h3>Information We Generate When You Use Our Services<\/h3>\n<p>When you use our Services, we collect information about which of those Services you’ve used and how you’ve used them. This helps us better understand the way our community uses our Services so that we can make improvements.<\/p>\n<p>This includes usage information (information about how you interact with our Services — for example, which Lenses you view and apply, your premium subscriptions, Stories you watch, and how often you interact with other Snapchatters) and content information (information about content you create or provide, your engagement with the camera and creative tools, your interactions with My AI, and metadata — for example, information about the content itself like the date and time it was posted and who viewed it). Content information includes information based on the content of the image, video, or audio — so if you post a Spotlight of a basketball game, we may use that information to show you more content on Spotlight about basketball, or if you enable certain face grouping features, we may use information about faces detected in your Memories to help you organize and find Snaps featuring the same person.<\/p>\n<p>This also includes device information (such as your device hardware or software, operating system, device memory, advertising identifiers, apps installed, browser type, information from device sensors that measure the motion of your device or compasses and microphones, including whether you have headphones connected, and information about your wireless and mobile connections), IP address-based location information (IP address), information collected by cookies and similar technologies, depending on your settings, (cookies, pixels (small graphic data that recognize user activity, such as if and how often a user has visited a website), web storage, unique advertising identifiers), and log information (such as details about how you’ve used our Services, access times, pages viewed, IP address, and unique identifiers like cookies).<\/p>\n<p>If you’ve explicitly granted device-level permissions, device information may also include information about your device phonebook (contacts and related information), images and other information from your device’s camera, photos, and microphone (like the ability to take photos, videos, view stored photos and videos, and access the microphone to record audio while recording video), and precise location information (precise location through methods like GPS signals).<\/p>\n<h3>Data We Receive From Others<\/h3>\n<p>The last category of data we collect is information about you that we may receive from others, such as other users, our affiliates, and third parties. This includes linked third-party service data (information we get when you link your Snapchat account to another service), data from advertisers (information from advertisers, app developers, publishers, and other third parties to help target or measure the performance of ads), contact info from other Snapchatters or third parties (if another Snapchatter uploads their contact list which includes your information, we may combine that with other information we have about you to better understand who you may want to communicate with. Or, if you provide us with your contact information, we may use that to determine if we can communicate with you in other ways, like SMS, email, or other messaging services), and data relating to potential violations of our Terms (we may receive information from third parties, including website publishers, social network providers, law enforcement, and others, about potential violators of our Terms of Service and Community Guidelines).<\/p>\n<h3>Other Information, With Your Permission<\/h3>\n<p>Additionally, there may be instances when you interact with our Services that we will ask your permission to collect additional information. For example, before accessing your device’s camera roll or your device or third party contact book.<\/p>\n<h3>How We Use Information<\/h3>\n<p>This section explains how we use the information we collect. Among other things, <mark class=\"hl\" id=\"snapchat-hl1\">we use the information we collect to provide you with personalized products and Services that we work hard to build and improve.<\/mark> Below, we walk through each purpose for which we use information in detail. If you’d like to see a mapping of the data we collect with the purposes for which we collect it, we have a table here.<\/p>\n<p>Keep Things Up &amp; Running (i.e., operate, deliver, and maintain our Services)<\/p>\n<p>We use the information we collect in order to operate, deliver, and maintain our Services. For example, by delivering a Snap you want to send to a friend or, if you share your location on Snap Map, to show you suggestions like places you might like in your neighborhood, content others have posted to the Map, or your friends if they’re sharing their location with you. We also use some of your information to help keep our products up to date, for example to make sure that our Services work with the latest operating systems and devices.<\/p>\n<h3>Personalize Your Experience &amp; Give Context<\/h3>\n<p>We offer personalized Services to Snapchatters. One of the ways we do this is by showing you content that is relevant to you or we think you may enjoy based on the information you share with us. To do so, we use information about you across different areas of the Services in order to add context to your Snapchat experience. For example, we automatically tag content with labels based on the content, your location, or the time of day. So, if there&#x27;s a dog in the photo, it may be searchable in Memories by the term “dog,” show up on the Map at the location where you created the Memory, and inform us that you’re into dogs so we can surface you fun dog videos and dog food ads in other parts of our Services, such as Spotlight. If you enable certain face grouping features, we may use information about faces in your Memories to improve search, organization, and personalization in Memories (for example, by suggesting Memories with the same friend).<\/p>\n<p>Personalization can also help with suggesting friends or recommending a new friend to send a Snap to based on who you Snap with the most. We may show recommended places on the Snap Map, generate content with our AI Features like stickers or Snaps, infer your age or interests based on your content or activity, or customize the content we show you, including ads. For example, if you watch barista content on Spotlight, talk to My AI about your favorite espresso machine, or save a lot of coffee-related Snaps in your Memories, we may highlight coffee shops on the Snap Map when you visit a new city or show you content about coffee that you may find interesting or relevant. Or, if you interact with a lot of music venues we may use that to show you ads for upcoming shows in town. Personalization also includes tailoring your experience based on who you interact with most and what your friends are doing, including showing you content your friends create, like, or enjoy on Spotlight or Place recommendations that are popular with your friends.<\/p>\n<p>Our goal is to continuously provide you with more relevant and interesting content.<\/p>\n<p>For example, if you watch a lot of sports content, but skip content with hair and makeup tips, our recommendation algorithms will prioritize sports, but not those makeup tips. You can learn more about how we understand Snapchatter preferences and rank and moderate content here.<\/p>\n<p>We believe it is critical to also balance the benefits of personalization with our Snapchatters’ expectations of privacy. For example, we may automatically tag the Snaps you save to Memories based on the content within it (e.g., the Snap contained a dog), and then use that tag to personalize your experience, make recommendations, or show you ads (such as showing you Spotlight Snaps containing dogs). We do not use the private content and communications you send to people who are your friends to personalize your experience, make recommendations, or show you ads.<\/p>\n<h3>Provide Relevant Ads<\/h3>\n<p>Another way we provide a personalized Service is through the ads we show. We use your interests and preferences from the information we’ve collected to personalize, target, and measure ads. We think ads are best when they’re relevant. That’s why we try to select the right ads and show them to you at the right time. For example, if you’ve interacted with ads for video games, we will infer that you like video games, and show you similar ads, but those won’t be the only ads you see. Similar to our content strategy, we try to ensure you receive a variety of ads. We also use your information to avoid showing you ads you probably won’t be interested in. For example, if a ticketing site tells us you’ve previously bought tickets for a movie — we can stop showing you ads for it. You can learn about the different types of advertising and your choices about which ads you receive here.<\/p>\n<p>You can learn more about how we collect, use, and share your information for advertising purposes here.<\/p>\n<p>A note about information collected by cookies and other technologies: we may use these technologies to collect information when you interact with Services we offer through one of our partners. For example, we may use information collected on an advertiser’s website to show you more relevant ads. Most web browsers are set to accept cookies by default. If you prefer, you can usually remove or reject browser cookies through the settings on your browser or device. Keep in mind, though, that removing or rejecting cookies could affect the availability and functionality of our Services. To learn more about how we and our partners use cookies on our Services and your choices, please check out our Cookie Policy.<\/p>\n<h3>How We Share Information<\/h3>\n<p>This section explains who we share information with, what that information may include, and the reasons for sharing that information, including when we need to transfer it outside of the country it was collected from.<\/p>\n<h3>Recipients &amp; Reasons for Sharing<\/h3>\n<p>Snapchat. To provide our Services to you and our community, we may share some of your information with your friends on Snapchat or other Snapchatters. For example, the content you post to Stories, your current or recent activity status, or your status as a premium subscriber, can be viewed by your Friends if you allow it. See the Control Over Your Information section and your Settings for the controls you have over who sees what and when.<\/p>\n<p>Family Center Participants. When you have enabled Family Center, we share information about the connected teen account to the parent or guardian to provide insight about how the account is used, for example, who your Friends are on Snapchat or which friends you may be sharing your location with. We do not share the content of private content and communications. Learn more.<\/p>\n<p>Public. Most of the features on Snapchat are private and for Friends only, but we also offer features that allow you to create and share public content to showcase your best Snaps to the world, such as Spotlight, Snap Map, or your Public Profile. When you do this, those Snaps may also be discoverable outside of Snapchat, for example on the web. Some information, like your username and Bitmoji, are visible to the public. Learn more.<\/p>\n<p>Third-Party Apps. Sometimes we provide features that allow you to connect with third-party apps. If you decide to connect your Snapchat account with a third-party app, we will share any additional information associated with your account that you direct us to for the purpose of fulfilling the connection request.<\/p>\n<p>Service Providers. <mark class=\"hl\" id=\"snapchat-hl0\">We share your information with our service providers, who process that information on our behalf. For example, we rely on such Service Providers to facilitate payments, measure and optimize the performance of ads, or protect the services.<\/mark> We do not share private content and communications with our service providers to use for their own purposes. We maintain a list of categories of service providers here.<\/p>\n<p>Business and Integrated Partners. We share your information with business and integrated partners in order to provide the Services. For example, you can use OpenTable within Snapchat to reserve a table. This does not include sharing private content and communications. We maintain a list of these partners here.<\/p>\n<p>Anti-Fraud Partners. We share your information, such as device and usage information, with industry partners working to prevent fraud.<\/p>\n<p>Legal, Safety, and Security Partners. We share your information as necessary for the following legal, safety, and security reasons:<\/p>\n<p>comply with any valid legal process, governmental request, or applicable law, rule, or regulation.<\/p>\n<p>investigate, remedy, or enforce potential Terms of Service and Community Guidelines violations.<\/p>\n<p>protect the rights, property, or safety of us, our users, or others.<\/p>\n<p>detect and resolve any fraud or security concerns.<\/p>\n<p>Affiliates. Snap Inc. consists of different subsidiaries owned by us. We may share your information within those internal subsidiaries at your direction, the direction of other users, or as needed to carry out our own and our affiliates’ Services.<\/p>\n<p>For the purposes of a Merger or Acquisition. <mark class=\"hl\" id=\"snapchat-hl3\">If we were to sell or negotiate to sell our business to a buyer or possible buyer, we may transfer your information to a successor or affiliate as part of that transaction.<\/mark><\/p>\n<h3>Integrated Partners<\/h3>\n<p>Our Services may contain content and integrations offered by our integrated partners. Examples include integrations in Lenses, Camera editing tools, and the Map, and third-party developer integrations with our Services. Your information may be provided to the integrated partner through these integrations, as well as to Snap. We are not responsible for how those partners collect or use your information. As always, we encourage you to review the privacy policies of every third-party service that you visit or use, including those third parties you interact with through our Services. You can learn more about our integrations in Snapchat here.<\/p>\n<p>On iOS we use Apple’s TrueDepth camera to improve the quality of Lenses. Note, however, that this information is used in real time — we don’t store this information on our servers or share it with third parties.<\/p>\n<h3>How Long We Keep Your Information<\/h3>\n<p>In this section we provide you with information on how long we keep your information, why we keep your information, and also highlight how we may need to keep your information to comply with laws, courts, and other obligations.<\/p>\n<p><mark class=\"hl\" id=\"snapchat-hl2\">As a general rule, we keep information as long as you tell us to, and otherwise as long as we need it to provide our Services, or as required by law.<\/mark> For example, if you store something in Memories, we will keep it as long as you need it, but when you Chat with a friend, our systems are designed to delete Chats you send within 24 hours after your friend reads it (unless you’ve changed your default settings or decide to save it). Whether we retain your data depends on the specific feature, your settings, and how you’re using the Services. Here are some more factors we consider when we decide how long to keep your information:<\/p>\n<p>If we need the information to operate or provide our Services. For example, we store your basic account details — like your name, phone number, and email address — to maintain your account.<\/p>\n<p>To do the things you expect from our Services and as we’ve described within this Privacy Policy. For example, we maintain your list of friends until you ask us to delete them since friends are key to expressing yourself. Similarly, we keep your shared list of contacts until you ask us to remove them in our app settings (note: updating your device permissions may not remove the contacts you’ve previously shared with Snapchat). Learn more. Conversely, Snaps and Chats sent in Snapchat will be deleted by default from our servers within 24 hours after we detect they’ve been opened by all recipients or have expired, unless you’ve changed your default settings or decide to save something, in which case we will honor your choices.<\/p>\n<p>The information itself. For example, we store location information (IP-address based or precise, depending on your permissions) for different lengths of time based on how precise it is and which Services you use. If location information is associated with a Snap — like those saved to Memories or posted to Snap Map or Spotlight — we’ll retain that location as long as we store the Snap. Pro tip: You can see the location data we retain about you by downloading your data.<\/p>\n<p>How long we need to retain the information to comply with certain legal obligations.<\/p>\n<p>If we need it for other legitimate purposes, such as to prevent harm, investigate possible violations of our Terms of Service or other policies, investigate reports of abuse, or protect ourselves or others.<\/p>\n<p>Take a look at our Privacy by Product page and support page for details on the specific retention periods for products.<\/p>\n<p>Although our systems are designed to delete some of your information automatically, we cannot promise that deletion will take place by a specific time.<\/p>\n<p>In some cases we need to comply with legal requirements to store your data which stops us from deleting your information. For example, if we receive a notice from a court asking us to keep a copy of your content. Other reasons we may keep a copy of your data are if we get reports of abuse or other Terms or policy violations, or if your account, content created by you, or content created with other Snapchatters is flagged by others or our systems for abuse or other Terms or policy violations. Finally, we may also keep certain information in backup for a limited period of time or as required by law.<\/p>\n<p>For the latest information about how long we store different types of content, check out our Support Site.<\/p>",
+  "analysis": {
+   "summary": {
+    "tldr": "Snap Inc. collects your data to provide personalized services and show relevant ads. They share your data with friends, service providers, and business partners. Data is kept for varying periods, with some data retained for legal reasons.",
+    "data_in": [
+     "Account details, profile, payment info",
+     "Content and interactions, location data",
+     "Device info, IP addresses, cookies"
+    ],
+    "data_out": [
+     "Friends, service providers, business partners",
+     "Not stated in the policy."
+    ],
+    "used_for": [
+     "Personalized services, ads",
+     "Not stated in the policy."
+    ],
+    "retention_and_rights": [
+     "24-hour default for Chats, longer for saved content",
+     "Not stated in the policy."
+    ]
+   },
+   "highlights": [
+    {
+     "criterion": "third_party_sharing",
+     "quote": "We share your information with our service providers, who process that information on our behalf. For example, we rely on such Service Providers to facilitate payments, measure and optimize the performance of ads, or protect the services.",
+     "explanation": "Snap Inc. shares user data with service providers for various purposes, including ad performance and security, but does not share private content and communications for their own use.",
+     "severity": "notable"
+    },
+    {
+     "criterion": "vague_language",
+     "quote": "We use the information we collect to provide you with personalized products and Services that we work hard to build and improve.",
+     "explanation": "The policy uses vague language to describe how data is used, without specifying the exact practices.",
+     "severity": "notable"
+    },
+    {
+     "criterion": "retention",
+     "quote": "As a general rule, we keep information as long as you tell us to, and otherwise as long as we need it to provide our Services, or as required by law.",
+     "explanation": "Snap Inc. retains data for varying periods, but does not specify exact retention times for most data.",
+     "severity": "notable"
+    },
+    {
+     "criterion": "policy_changes",
+     "quote": "If we were to sell or negotiate to sell our business to a buyer or possible buyer, we may transfer your information to a successor or affiliate as part of that transaction.",
+     "explanation": "Snap Inc. may transfer user data in the event of a business sale, without requiring new consent from users.",
+     "severity": "notable"
+    }
+   ]
+  },
+  "markFor": [
+   "snapchat-hl0",
+   "snapchat-hl1",
+   "snapchat-hl2",
+   "snapchat-hl3"
+  ],
+  "model": "policy-qwen"
+ },
+ "tiktok": {
+  "app": "TikTok",
+  "html": "<p>Last updated: July 15, 2026<\/p>\n<p>This Privacy Policy applies to TikTok services (the “Services”), which include TikTok apps, websites, software, and related services, accessed via any platform or device, that link to this Privacy Policy, as well as TikTok Ad Network. The Services are operated by TikTok USDS Joint Venture LLC (“TikTok USDS Joint Venture”, “we” or “us”).<\/p>\n<p>We are committed to protecting and respecting your privacy. This Privacy Policy explains how we collect, use, share, and otherwise process the personal information of users and other individuals in connection with the Services. For information about how we collect, use, share, and otherwise process consumer health data as defined under Washington’s My Health My Data Act and other similar state laws, please refer to the Consumer Health Data Privacy Policy. If you are a teen, please see the Privacy Policy - Teen Summary for a summary of this Privacy Policy.<\/p>\n<p>Capitalized terms that are not defined in this Privacy Policy have the meaning given to them in the Terms of Service.<\/p>\n<h3>Information We Collect<\/h3>\n<p>We collect your information in three ways: information that you provide, automatically collected information, and information from other sources. More detail is provided below.<\/p>\n<h3>Information You Provide<\/h3>\n<p>When you create an account, upload content, contact us directly, or otherwise use the Services, you may provide some or all of the following information:<\/p>\n<p>Account information, such as date of birth, username, password, email, phone number, and profile image.<\/p>\n<p>User content, including comments, photographs, livestreams, audio recordings, videos, and text that you choose to create, import, upload, or publish through our apps and websites. Even if you are not a user, information about you may appear in user content created or published by users on our apps and websites. We may collect user content through pre-uploading at the time of creation, import, or upload, regardless of whether you choose to save or publish that user content, for example, to recommend audio options, provide an effect, generate captions, and provide other personalized recommendations.<\/p>\n<p>Messages, including content you compose, send, or receive through our messaging functionalities, including messages you send through our chat functionality when using our shopping features to communicate with sellers.<\/p>\n<p>AI interactions, including prompts, questions, files, and other types of information that you submit to our AI-powered interfaces, as well as the responses they generate.<\/p>\n<p>Clipboard content, such as text and images, accessed through your device&#x27;s clipboard when you choose to use certain functions such as initiating information sharing with third-party services, or copying and pasting clipboard content onto our apps and websites.<\/p>\n<p>Purchase information, including payment card information, billing, delivery, and contact information, and purchase history when you make a purchase, payment, or other transaction on or through the Services, including when you buy TikTok Coins or purchase products or services through our shopping features.<\/p>\n<p>Your phone and social network contacts, with your permission. If you choose to sync your contacts, we will collect information, such as names, phone numbers, and email addresses from your device’s phone book, and friends list from your social network, and match that information to users who have TikTok accounts. We also collect information about the accounts you follow and that follow you.<\/p>\n<p>Your account settings and communication preferences.<\/p>\n<p>Information to verify an account such as proof of identity or age.<\/p>\n<p>Information in correspondence you send to us, including when you contact us for support.<\/p>\n<p>Information you share if you fill in advertisers’ forms on our app, or through your participation in surveys, research, promotions, marketing campaigns, events, or contests.<\/p>\n<p>Information You Provide may include sensitive personal information, as defined under applicable state privacy laws. We process such information in accordance with applicable law, such as to provide the Services and other permitted purposes under state privacy laws, like the California Consumer Privacy Act (&quot;CCPA&quot;). You may choose whether or not you include sensitive personal information in your user content or in other information you voluntarily submit. The type of information that state privacy laws, such as the CCPA, have identified as sensitive personal information include the following: racial or ethnic origin, national origin, religious beliefs, mental or physical health diagnosis, sexual life or sexual orientation, status as transgender or nonbinary, citizenship or immigration status, or financial information. TikTok does not require you to provide this type of information. However, if you choose to publish user content about these topics, please keep in mind that such content may be visible to other users and the public, depending on your privacy settings.<\/p>\n<p>In other situations, we may process your financial information in order to provide you the goods or services you request from us; your driver’s license number in order to verify your identity; and information from users under the relevant age threshold in order to provide an age-appropriate experience. We may also collect precise location data, depending on your settings and as explained below.<\/p>\n<h3>Automatically Collected Information<\/h3>\n<p>We automatically collect certain information from you when you use the Services, including:<\/p>\n<p>Usage information, including information regarding your use of the Services, such as information about how you interact with content and ads, the duration and frequency of your use of the Services, and your engagement with other users. We also collect certain information about your interactions with websites when you use our in-app browser.<\/p>\n<p>Technical information from your device, network, and application, including your IP address, user agent, mobile carrier, time zone settings, identifiers for advertising purposes, model of your device, the device system, network type, your screen resolution and operating system, app and file names and types, keystroke patterns or rhythms, battery state, audio settings and connected audio devices. We automatically assign device IDs and user IDs, and may use this and other information to identify your activity across devices.<\/p>\n<p>Location information about your approximate location based on your device and network information, such as SIM card region, IP address, and device system settings. We also collect information, such as tourist attractions, shops, or other points of interest, if you choose to add the location to your user content. Also, if you choose to enable location services for the TikTok app within your device settings, we collect approximate or precise location information from your device. You can turn off location services from your device settings at any time. Click here to learn more about how we collect location information.<\/p>\n<p>Content characteristics and features, including about the videos, images and audio recordings that are part of your user content, for example, by identifying objects and scenery; the existence and location of a face and other body parts; and the text of words spoken in your user content. We may collect this information to enable special video effects, for content moderation, for demographic classification, for content and ad recommendations, and for other non-personally-identifying operations. We may collect biometric identifiers and biometric information as defined under US laws, such as faceprints and voiceprints, from your user content. Where required by law, we will seek any required permissions from you prior to any such collection. Click here to learn more.<\/p>\n<p>Metadata that is automatically uploaded in connection with your user content, messages, or AI interactions, such as how, when, where, and by whom the user content was created, or message or prompt was sent. Metadata may also include information, such as your username, that enables your user content to be traced back to your account by other users.<\/p>\n<p>Cookies and other similar technologies (e.g., web beacons, flash cookies, pixels, SDKs, etc.) that we and our service providers and business partners use to provide certain features and functionalities, including to measure and analyze how you use the Services, including which pages you view most often and how you interact with content; enhance your experience using the Services; improve the Services; provide you with advertising; and promote the Services on other websites and apps. To learn how to disable certain Cookies, see the “Your Rights and Choices” section below.<\/p>\n<h3>Information From Other Sources<\/h3>\n<p>We may receive the information described in this Privacy Policy from other sources, such as:<\/p>\n<p>If you choose to sign up or log in to the Services using, or link your TikTok account to, a third-party service, we may collect information from the third-party service, such as your public profile information and email.<\/p>\n<p>Advertisers, publishers, and measurement and other partners provide us with information about you and the actions you have taken outside of our websites and apps, including the pages you visit, products or services you purchase, and apps you download. These partners also provide information such as mobile identifiers for advertising, hashed email addresses and phone numbers, and cookie identifiers, which we use to help measure the effectiveness of ads we serve and to better deliver ads to you on our websites and apps, or through TikTok Ad Network elsewhere online, depending on your ads settings. Some of our advertisers and other partners enable us to collect similar information directly from their websites or apps by integrating our TikTok Advertiser Tools (such as TikTok Pixel).<\/p>\n<p>We receive information about you from sellers as well as payment and transaction fulfillment providers, such as payment confirmation details, and information about the delivery of products you have purchased through our shopping features.<\/p>\n<p>We may obtain information about you from affiliates controlled by, or under common control with, us.<\/p>\n<p>We may receive information about you from others, such as where you are included or mentioned in user content, messages, in a complaint, appeal, request or feedback submitted to us, or if your contact information is provided to us.<\/p>\n<p>We may also collect or receive information about you from professional organizations, businesses, government authorities, and others, including publicly-available sources.<\/p>\n<h3>How We Use Your Information<\/h3>\n<p><mark class=\"hl\" id=\"tiktok-hl1\">We use the Information We Collect for the following purposes:<\/mark><\/p>\n<p><mark class=\"hl\">To operate and administer the Services, such as enabling you to create, share, and consume content and to interact with other users and their content, and providing user support.<\/mark><\/p>\n<p>To review, support, improve, and develop the Services, and train, test, and improve technology, such as machine learning models and algorithms, including by analyzing how people are using the Services; conducting research; soliciting feedback; monitoring your activity and usage across the devices you use to access the Services; and scanning, analyzing, and reviewing user content, messages, AI interactions, and associated metadata.<\/p>\n<p>To personalize and customize certain features and content, such as providing your “For You” feed and content creation tools.<\/p>\n<p>To provide our shopping features and facilitate the purchase and delivery of products, goods, and services.<\/p>\n<p>To promote our and third-party products and services through marketing campaigns, including communications, contests, and events. We may also use user content as part of our marketing campaigns, with your permission.<\/p>\n<p>To provide and improve our advertising services and measure the effectiveness of the ads we serve.<\/p>\n<p>To support the social functions of the Services, including to permit you and others to connect with each other (for example, through our Find Friends function), to suggest accounts to you and suggest your account to others, and for you and others to share, download, and otherwise interact with user content.<\/p>\n<p>To infer additional information about you, such as your age, gender, and interests.<\/p>\n<p>To maintain and enhance the safety, security, and stability of the Services by identifying and addressing technical or security issues or problems (such as technical bugs and spam accounts), and detecting abuse, fraud, and illegal activity.<\/p>\n<p>To verify your identity or age in order to use certain features, such as livestream or verified accounts or in other instances where verification may be required.<\/p>\n<p>To communicate with you, including to notify you about changes in our services.<\/p>\n<p>To enforce our Terms of Service, Community Guidelines, and other conditions and policies that apply to you and to protect the safety of our community and integrity of the Services, including by scanning, analyzing, and reviewing user content, messages, AI interactions, and associated metadata.<\/p>\n<p>To comply with our legal obligations and defend our legal rights and commercial interests, and those of our affiliates, users, and the public.<\/p>\n<p>For any other purposes disclosed to you at the time we collect your information or pursuant to your consent.<\/p>\n<p>To combine Information We Collect for any of the foregoing purposes.<\/p>\n<p>To aggregate or de-identify Information We Collect.<\/p>\n<p>Profiling: We do not engage in profiling which results in legal or similarly significant effects, as defined under applicable law.<\/p>\n<h3>How We Share Your Information<\/h3>\n<p>We are committed to maintaining your trust, and while we do not sell your personal information or share your personal information with third parties for purposes of cross-context behavioral advertising where restricted by applicable law, we want you to understand when and with whom we may share the Information We Collect for the purposes described below. Please note that information disclosed to certain third parties may be processed in accordance with their privacy policies.<\/p>\n<h3>Service Providers and Business Partners<\/h3>\n<p><mark class=\"hl\" id=\"tiktok-hl0\">We share Information We Collect with service providers and business partners as necessary to help us perform business operations and for business purposes, including research, payment processing and transaction fulfillment, administering contests and special offers, technology services, deliveries, sending communications, advertising and marketing services, analytics, measurement, data storage and hosting, disaster recovery, and search engine optimization.<\/mark> Examples of such service providers and business partners include:<\/p>\n<p>TT Commerce &amp; Global Services LLC and its affiliates (“TT Commerce &amp; Global Services”), to facilitate a global and interoperable experience, and for other permitted business purposes. We only share specific categories of information consistent with applicable law, including Executive Order 14352 and any compliance obligations thereunder.<\/p>\n<p>Payment processors and transaction fulfillment providers, who may receive certain Information You Provide, Automatically Collected Information, and Information From Other Sources, including, in particular, the following third-party payment providers/processors: PayPal (https://www.paypal.com/us/webapps/mpp/ua/privacy-full) and Stripe (https://stripe.com/en-ie/privacy).<\/p>\n<p>Customer and technical support providers, who may receive certain Information You Provide, Automatically Collected Information, and Information From Other Sources.<\/p>\n<p>Advertising, marketing, and analytics partners, who may receive certain Information You Provide, Automatically Collected Information, and Information From Other Sources for the purpose of providing their services.<\/p>\n<p>Users of our analytics services, who may receive aggregated statistics and insights to understand user engagement. For example, creators, advertisers and sellers can receive information about the number of views, likes, comments and shares of their content, as well as information to understand their followers, buyers and the audience of their content. We may create this aggregate information using Information You Provide and Automatically Collected Information.<\/p>\n<p>Sellers and their service providers, who may receive certain Information You Provide, Automatically Collected Information, and Information From Other Sources when you make a purchase through our shopping features. We share the information related to your transaction with such entities, as well as certain technical information for security purposes.<\/p>\n<p>Third-party platforms and partners, who may receive certain Information You Provide, Automatically Collected Information, and Information From Other Sources depending on the features you use and the permissions you grant. We share your information with these entities to offer you a seamless sign-up, log-in, and content-sharing experience as well as to enable third-party features which allow you to connect your TikTok account.<\/p>\n<h3>Within Our Corporate Group<\/h3>\n<p>We may share Information We Collect with affiliates controlled by, or under common control with, TikTok USDS Joint Venture as necessary for the purposes set forth within this Privacy Policy.<\/p>\n<h3>In Connection with a Sale, Merger, or Other Business Transfer<\/h3>\n<p><mark class=\"hl\" id=\"tiktok-hl3\">We may share Information We Collect in connection with or during negotiations of a corporate transaction, such as a merger, acquisition in full or in part, reorganization, asset sale, or in the unlikely event of bankruptcy.<\/mark><\/p>\n<h3>For Legal Reasons<\/h3>\n<p>We may share Information We Collect to comply with the law, including to respond to subpoenas, court orders, legal process, law enforcement requests, legal claims, or government inquiries. We may also disclose Information We Collect to enforce any terms applicable to the Services, and to protect and defend our rights, interests, safety, and security, and those of our affiliates, users, or the public.<\/p>\n<h3>Users and the Public<\/h3>\n<p>Based on your privacy settings, your information, including certain of your account information, user content, and usage information, may be visible to other users and the public. For example, if you have a public account and have not restricted the visibility of your posts individually, your account information and user content can be viewed or shared by anyone, whether or not they have a TikTok account, and may also appear on search engines, content aggregators, and news sites. You can learn about privacy settings, including how to limit the audience for your videos, here. Please use caution in disclosing personal information, especially sensitive personal information, while using the Services. We are not responsible for the information you choose to publicly disclose.<\/p>\n<h3>Independent Researchers<\/h3>\n<p>We may share certain of your information with qualifying researchers to facilitate independent research.<\/p>\n<h3>With Your Consent<\/h3>\n<p>We may share your information for other purposes pursuant to your consent or at your direction. For example, we may facilitate the sending of marketing communications to you by sellers, such as by sharing your email address.<\/p>\n<h3>Data Security and Retention<\/h3>\n<p>We use reasonable measures to help protect information from loss, theft, misuse, unauthorized access, disclosure, alteration, or destruction. You should understand that no data storage system or transmission of data over the Internet or any other public network can be guaranteed to be 100 percent secure. Please note that information collected by third parties may not have the same security protections as information you submit to us, and we are not responsible for protecting the security of such information.<\/p>\n<p><mark class=\"hl\" id=\"tiktok-hl2\">We retain information for as long as necessary to provide the Services and for the other purposes set out in this Privacy Policy. We also retain information when necessary to comply with contractual and legal obligations, when we have a legitimate business interest to do so (such as improving and developing the Services, and enhancing its safety, security and stability), and for the exercise or defense of legal claims.<\/mark><\/p>\n<p>The retention periods are different depending on different criteria, such as the type of information and the purposes for which we use the information. For example, when we process your information such as your account registration information to provide you with the Services, we keep this information for as long as you have an account, subject to your updates of such information. If you violate our Terms of Service, Community Guidelines, or other conditions or policies, we may remove you from the Services immediately, but may keep information about you to process the violation.<\/p>",
+  "analysis": {
+   "summary": {
+    "tldr": "TikTok collects personal data like account info, user content, and location data. It shares this data with service providers, business partners, and affiliates. Data is kept for as long as needed to provide services, but users can control some settings.",
+    "data_in": [
+     "Account info, user content, messages, AI interactions, clipboard content, purchase info, contacts",
+     "Precise location data based on device and network info",
+     "Sensitive personal info like financial, health, and biometric data (with consent)"
+    ],
+    "data_out": [
+     "Service providers, business partners, affiliates, and third-party platforms",
+     "Advertisers, analytics partners, sellers, and customer support providers"
+    ],
+    "used_for": [
+     "Operating and administering services, improving features, providing support, and marketing",
+     "Personalizing content, verifying identity, and maintaining safety"
+    ],
+    "retention_and_rights": [
+     "Kept for as long as needed, but users can control some settings",
+     "No specific retention periods stated"
+    ]
+   },
+   "highlights": [
+    {
+     "criterion": "third_party_sharing",
+     "quote": "We share Information We Collect with service providers and business partners as necessary to help us perform business operations and for business purposes, including research, payment processing and transaction fulfillment, administering contests and special offers, technology services, deliveries, sending communications, advertising and marketing services, analytics, measurement, data storage and hosting, disaster recovery, and search engine optimization.",
+     "explanation": "TikTok shares user data with various service providers and business partners for operational and business purposes, including advertising and marketing services, analytics, and data storage. This sharing is for business purposes and not for cross-context behavioral advertising, as restricted by applicable law.",
+     "severity": "notable"
+    },
+    {
+     "criterion": "vague_language",
+     "quote": "We use the Information We Collect for the following purposes: To operate and administer the Services, such as enabling you to create, share, and consume content and to interact with other users and their content, and providing user support.",
+     "explanation": "The purpose of collecting information is described in vague terms, such as 'operating and administering the Services.' This does not provide clear details on specific uses of the data.",
+     "severity": "notable"
+    },
+    {
+     "criterion": "broad_permissions",
+     "quote": "We retain information for as long as necessary to provide the Services and for the other purposes set out in this Privacy Policy. We also retain information when necessary to comply with contractual and legal obligations, when we have a legitimate business interest to do so (such as improving and developing the Services, and enhancing its safety, security and stability), and for the exercise or defense of legal claims.",
+     "explanation": "TikTok retains user data for various purposes, including improving the Services and defending legal claims, which are broad and could allow for indefinite retention of data.",
+     "severity": "notable"
+    },
+    {
+     "criterion": "retention",
+     "quote": "We retain information for as long as necessary to provide the Services and for the other purposes set out in this Privacy Policy. We also retain information when necessary to comply with contractual and legal obligations, when we have a legitimate business interest to do so (such as improving and developing the Services, and enhancing its safety, security and stability), and for the exercise or defense of legal claims.",
+     "explanation": "TikTok retains user data for as long as necessary for various purposes, but specific retention periods are not stated, which could mean indefinite retention.",
+     "severity": "notable"
+    },
+    {
+     "criterion": "policy_changes",
+     "quote": "We may share Information We Collect in connection with or during negotiations of a corporate transaction, such as a merger, acquisition in full or in part, reorganization, asset sale, or in the unlikely event of bankruptcy.",
+     "explanation": "TikTok may share user data in connection with corporate transactions, but there is no mention of notifying users or requiring new consent for such sharing.",
+     "severity": "notable"
+    }
+   ]
+  },
+  "markFor": [
+   "tiktok-hl0",
+   "tiktok-hl1",
+   "tiktok-hl2",
+   "tiktok-hl2",
+   "tiktok-hl3"
+  ],
+  "model": "policy-qwen"
+ },
+ "temu": {
+  "app": "Temu",
+  "html": "<p>Last Updated: November 14, 2025<\/p>\n<h3>What Information We Collect<\/h3>\n<p>In the course of providing and improving our Service, we collect your personal information for the purposes described in this Privacy Policy. The following are the types of personal information that we collect:<\/p>\n<h3>Information that you provide<\/h3>\n<p>When you create an account, browse the Service, place an order at checkout, contact us directly, or otherwise use the Service, you may provide some or all of the following information:<\/p>\n<h3>Account and profile<\/h3>\n<p>We collect your mobile phone number and/or email address as the login credentials for your account and assign a user identification number to your account. If you choose to register or log in via external third-party services, such as Facebook or Google, you agree we may collect your profile photo, username, and/or email address associated with the relevant third-party service provider. We also collect information in your profile, account settings and preferences in your Temu account. We also collect your country/region.<\/p>\n<h3>Purchases<\/h3>\n<p>We collect data related to your orders on the Service (e.g., transaction ID, transaction history, product identification number), payment information required to complete the transaction (e.g., payment card number or other third-party payment information required for payment, billing address), information provided by you for product sizing purposes, your shipping address (e.g., city, state, country/region, zip code), recipient contact information (e.g., name, mobile phone number), and designated package collection point (e.g., city, state, country/region, zip code) in countries where we enable this functionality.<\/p>\n<h3>Customer support activity<\/h3>\n<p>When you communicate with our customer service team through our customer support functions in the mobile application/on the website, either with a customer service agent or with our virtual assistant (via the chatbot or hotline), through social media, or any other means, we will collect your communication history with us which includes any text, images, video, audio, or supporting documents exchanged between us. <mark class=\"hl\" id=\"temu-hl1\">When submitting a complaint or request through our customer support functions, you may choose to provide documentation, information, or photographs including health details, medical treatments, tests, reports, medications or other evidence for product-related injuries or health impacts.<\/mark> For more information regarding our collection of consumer health data, please see our Consumer Health Data Privacy Policy.<\/p>\n<h3>Information when you contact us<\/h3>\n<p>When you contact us, we collect the information you send us, such as reports, feedback, or inquiries about your use of the Service or information about possible violations of our Terms of Use or other policies.<\/p>\n<h3>Chats with merchandise partners<\/h3>\n<p>When you chat with merchandise partners on Temu, we collect your chat communications and other related information.<\/p>\n<h3>User-generated content<\/h3>\n<p>When you provide any content (e.g., images, videos, or text) to leave product reviews and ratings, provide images to search for items, or provide images or text to customise products, we collect this information and its associated metadata to support and enable your use of the Service.<\/p>\n<h3>Promotion and event participation<\/h3>\n<p>We collect certain information when you participate in a contest, event, promotion, survey, giveaway or sweepstake, as part of the participation process, such as your desired prize selection. Such sweepstakes and contests are voluntary. We recommend that you read the rules and other relevant information for each sweepstake and contest that you enter. In addition, we collect information about your preferences for receiving marketing communications from us, as well as your interactions with them.<\/p>\n<h3>Other information not explicitly listed above<\/h3>\n<p>We will collect other information that you provide for purposes as described in this Privacy Policy or for any other purpose disclosed to you at the time we collect your information.<\/p>\n<h3>Information from third-party sources<\/h3>\n<p>To the extent permitted by applicable laws, we may receive and collect your personal information from other third-party sources, such as:<\/p>\n<h3>Data providers<\/h3>\n<p>We receive and collect your personal information, such as identity verification information and fraud prevention risk-scoring, from information services to help us detect fraud regarding payments, prevent unauthorized transactions, and safeguard the Service.<\/p>\n<h3>Marketing and advertising partners<\/h3>\n<p>We receive and collect your personal information from our marketing and advertising partners, such as business partners with whom we collaborate on marketing events and promotion of the Service. Specifically, we receive from these partners information including, for example, the specific advertisements you clicked on, attribution information via cookies and similar technologies to help us determine the origin of traffic to our Service, device data if you clicked on certain advertisements, responses to marketing emails, advertisements and offers, and audience information from marketing partners where they have the authority to share that information with us.<\/p>\n<h3>U.S. public authorities, public sources, and rights holders<\/h3>\n<p>We obtain your personal information which may include username, address, email, mobile phone number, purchase and/or payment information from third party sources, for example, as necessary to comply with our obligations, prevent, investigate and detect an alleged claim or crime, or for a party to assert their legal rights.<\/p>\n<h3>Our payment processors<\/h3>\n<p>We obtain your personal information from our third-party payment processors who help us process transactions, provide our Service, and prevent fraudulent or illegal activity. The personal information our payment processors pass to us includes your name, email address, billing address, and phone number.<\/p>\n<h3>Merchandise partners and their business partners<\/h3>\n<p>We collect publicly available information about you from our merchandise partners and/or their business partners, such as information about your purchases, use of products, ratings and reviews.<\/p>\n<h3>Other third-party services<\/h3>\n<p>We collect your personal information from other third-party services, such as:<\/p>\n<p>Social media services, from whom we may collect your username, profile picture, and/or email address associated with the relevant third-party services, if you choose to register or log in via said third-party service.<\/p>\n<p>Logistics service providers, from whom we may collect your certain information, such as package information, delivery progress, proof of delivery, and delivery address, and make this information available to you within your account, to effectively fulfill your order.<\/p>\n<p>Third-party mapping platforms, from whom we may receive, collect and locate the geographical coordinates of the address you have provided to us (e.g., Google maps), to easily direct you to the most appropriate package collection point for deliveries in countries where we enable this functionality.<\/p>\n<h3>Information collected automatically<\/h3>\n<p>To enhance your experience with the Service and support the other purposes for which we collect personal information as outlined in this Privacy Policy, we may automatically collect information about you, your computer, or mobile device and your interactions with the Service and our communications over time, such as:<\/p>\n<h3>Device data<\/h3>\n<p>We collect personal information about the device you use to access the Service, such as device model, operating system information, internet service provider, language settings, unique identifiers (e.g., identifiers used for advertising purposes where permitted by law).<\/p>\n<h3>Service usage information<\/h3>\n<p>We collect personal information about your interactions with the Service, including the source from which you arrived at our pages, the pages you viewed, other interactions with the Service (e.g., your browsing history, searching and purchasing history), the items in your shopping cart and whether you opened our emails or clicked on the links within our emails. We also collect service-related, diagnostic, and performance information, including crash reports and performance logs.<\/p>\n<h3>General location data<\/h3>\n<p>We collect your approximate location data based on your technical information (e.g., IP address).<\/p>\n<h3>Data collected via cookies and similar technologies<\/h3>\n<p>We collect information via cookies and similar technologies stored on your device. These cookies are either necessary and required to provide our Service (for example, the cookies we use to display products relevant to your language and location) or optional (for example, the cookies used to track and measure the advertisements shown to you). To learn how to disable certain cookies, please read our Cookies and Similar Technologies Policy.<\/p>\n<h3>Declining to provide information<\/h3>\n<p>We need to collect your personal information to provide certain services. If you do not provide the information we require to provide the Service, we cannot provide the Service. Other information is optional, but without it, the quality of your experience of the Service may be affected.<\/p>\n<h3>How and Why We Use Your Information<\/h3>\n<p>We use the personal information that we collect for various purposes, including to develop, improve, support, and provide the Service, allowing you to use its features while fulfilling and enforcing our Terms of Use. We may use your personal information for the following purposes:<\/p>\n<h3>Create and maintain your account<\/h3>\n<p>We use your personal information to create and maintain your account on the Service and enable account security features (e.g., sending security codes via email or text messages).<\/p>\n<h3>Orders and delivery of products and services<\/h3>\n<p>We use your personal information to receive and process orders, deliver products and services, process payments, communicate with you regarding orders, products, services, and promotional offers, and facilitate order disputes, refunds and/or returns of your orders.<\/p>\n<h3>Improve and optimize services and troubleshooting<\/h3>\n<p>We use your personal information to optimize features, analyze performance metrics, fix errors, and maintain and improve the Service and our business. As part of these activities, we may create aggregated or otherwise deidentified data based on the personal information we collect.<\/p>\n<h3>Deidentified information<\/h3>\n<p>We deidentify your personal information such that it cannot reasonably be used to infer information about you or otherwise be linked to you, and we may use such deidentified information for any purpose. To the extent we possess or process any deidentified information, we will maintain and use such information in deidentified form and not attempt to re-identify the information, except solely for the purpose of determining whether our deidentification process satisfies legal requirements.<\/p>\n<h3>Personalize your experience<\/h3>\n<p>We use your personal information to recommend features, products, and services that may be of interest to you. Personal information will also be used to determine your preferences and personalize your experience with the Service.<\/p>\n<h3>Communicate with you and provide customer support<\/h3>\n<p>We use your personal information to communicate with you (e.g., announcements, updates, security alerts, support, and administrative messages) and provide customer support for your requests, questions, and feedback.<\/p>\n<h3>Sweepstakes, contests, and other promotions and events<\/h3>\n<p>We use your user profile picture and account information to identify you in promotion activities and events, and facilitate your invitations to friends who you want to invite to join the Service.<\/p>\n<h3>Marketing<\/h3>\n<p>We and our service providers collect and use your personal information for marketing purposes in accordance with applicable laws. To the extent permitted by applicable laws, we may send you direct marketing communications, such as emails, text messages and push notifications. You may opt out of our marketing communications as described in the “Your Rights and Choices” section below.<\/p>\n<h3>Interest-based advertising<\/h3>\n<p>We, our service providers, and our third-party advertising partners may collect and use your personal information for interest-based advertising purposes. For example, we may use your interactions with the Service (e.g., your browsing, searching and purchasing history on the Service), and information included in your account profile (e.g., your country if recorded) to show you interest-based advertising on our platform, which displays a merchandise partner’s listing or product more prominently. We do not use information which on its own personally identifies you, such as your name or email address, to show you interest-based advertising. In providing interest-based advertising, we follow the Self-Regulatory Principles for Online Behavioral Advertising as set forth by the Digital Advertising Alliance (DAA), which is an advocacy organization for responsible digital marketing and consumer privacy. You can learn more about interest-based advertising and your opt-out choices here.<\/p>\n<h3>Fraud prevention and security<\/h3>\n<p>We use your personal information to prevent, detect, investigate, and respond to fraud, unauthorized access to or use of the Service, violations of the Terms of Use and other Temu policies, or other misconduct.<\/p>\n<h3>Compliance, legal obligations and protection<\/h3>\n<p>We may use your personal information for compliance purposes and to comply with applicable U.S. laws, including lawful requests, and legal processes (e.g., responding to subpoenas or requests from U.S. government or regulatory authorities); to comply with legal requirements of government entities (e.g., U.S. Customs), which may release such information pursuant to rules and regulations governing the public disclosure of government data; to protect our, your, and other users&#x27; rights, privacy, safety, or property (e.g., the establishment, exercise or defence of legal claims); to audit internal processes to ensure compliance with U.S. legal and contractual requirements and our internal policies; to enforce the terms and conditions that govern the Service; to prevent, identify, investigate, and deter fraudulent, harmful, unauthorized, unethical, or illegal activities, including cyberattacks and identity theft.<\/p>\n<h3>Legal claims based on your consent<\/h3>\n<p>In some cases, we may specifically ask for your consent to collect, use, or share your personal information, where required by applicable U.S. laws.<\/p>\n<p>Cookies and similar technologies for technical operations, performance enhancement, advertising, analytics, etc.<\/p>\n<p>For more information about cookies and how we use them, please read our Cookies and Similar Technologies Policy.<\/p>\n<h3>How and Why We Share Your Information<\/h3>\n<p>At Temu, we care deeply about privacy. While Temu shares your personal information for the purposes of targeted advertising, which may be considered a “sale” under applicable U.S. state privacy laws (as described further in the Privacy Policy Addendum for U.S. Residents), Temu does not “sell” personal information in the traditional sense. We may share your personal information with the following parties for the purposes outlined below:<\/p>\n<h3>Affiliates<\/h3>\n<p>As a global company, our Service is supported by entities within our corporate group. We share some of your personal information with Temu subsidiaries and affiliates as necessary to provide organizational, technical, legal and compliance support for the Service, including for the purposes of order fulfilment, and other core platform functions. Such personal information includes shipping address, and contact information. These subsidiaries and affiliates either follow the same practices described in this Privacy Policy or follow practices at least as protective as those described in this Privacy Policy.<\/p>\n<h3>Service providers<\/h3>\n<p><mark class=\"hl\" id=\"temu-hl0\">We share your personal information with third parties who provide services on our behalf or help us operate the Service or our business (e.g., hosting, information technology, customer support, content delivery, email delivery, order fulfillment and delivery, marketing, fraud detection, security and website analytics).<\/mark> These third-party service providers only have access to personal information needed to perform their functions and services, and we require these service providers to use personal information only as necessary to perform their services or comply with applicable legal obligations.<\/p>\n<h3>Payment processors<\/h3>\n<p>We share your personal information with our payment processors to complete payments, process disputes, and/or process refunds.<\/p>\n<h3>Advertising and analytics partners<\/h3>\n<p>We may share your personal information with third-party advertising, marketing, and analytics companies for the interest-based advertising and analytics purposes described in our Cookies and Similar Technologies Policy. Certain of these disclosures to third parties are known as “sharing” or processing your personal information for targeted advertising, but “sharing” may be considered “selling” your personal information under applicable laws. For additional information and to learn about your right to opt out of such practices, see the &quot;Your Rights and Choices&quot; section, the Privacy Policy Addendum for U.S. Residents, and the Cookies and Similar Technologies Policy.<\/p>\n<h3>Third parties designated by you<\/h3>\n<p>We may share your personal information with third parties where you have instructed us or provided your consent to do so. We may share the personal information required for the services you request with third parties designated by you, for example, where you choose to share a link to a Temu product listing via a third-party social media service. Please be aware that when you use third-party sites or services, their own terms and privacy policies will govern your use of those sites or services.<\/p>\n<h3>Business and marketing partners<\/h3>\n<p>We may share your personal information with third parties with whom we collaborate in order to offer or promote the Service. For example, depending on your communication preferences, we may share your personal information with third-party service providers with whom we have partnered in order to send you marketing communications, for example via text messages and/or emails.<\/p>\n<p>Professional advisors, U.S. public authorities, institutions, and regulators<\/p>\n<p>We may share your personal information with our professional advisors (e.g., lawyers, auditors, bankers and insurers); U.S. public authorities, such as law enforcement authorities in response to legal processes (e.g., responding to subpoenas or requests from U.S. law enforcement requests); and with other parties (e.g., financial institutions) in order to enforce our agreements or policies, protect the rights, property and safety of Temu, users and others, and to detect, prevent and address actual or suspected fraud, violations of Temu&#x27;s Terms of Use, other illegal activities, security issues or when it is required by law.<\/p>\n<h3>Business transferees<\/h3>\n<p>In the rare event of a business transaction such as a merger, acquisition, or reorganization, we may share some of your personal information with relevant parties (e.g., a buyer or successor) in order to facilitate such a transaction. If we intend to transfer information about you, we will inform you either by email or by posting a notice on the Service.<\/p>\n<h3>Merchandise partners<\/h3>\n<p>We may share your personal information with the merchandise partners related to the product reviews you leave, the return or refund reasons you request a return or refund, and customization information for customized/personalized items. To fulfill your order, we may share with the merchandise partner your name, shipping address, contact information, communications with our customer support functions, and your order information, for example, to address a query or complaint, or when the merchandise partner connects directly with logistics service providers. The merchandise partner will not receive your payment information or device data.<\/p>\n<h3>Other users<\/h3>\n<p>Please note that, in using our Service, your personal information may be visible to other users. In accordance with your settings and preferences, we may display your profile photo and/or username to other users, including when you participate in a promotion or marketing program (e.g., referring friends to our Service and accepting invitations from other users), when you review or rate a product, or when you add a product to your cart or purchase a product. To opt out of this profile photo and username sharing, please visit the “Notifications” menu and disable “Avatar and username sharing” and/or edit your reviews.<\/p>\n<h3>Data Security and Retention<\/h3>\n<p>The security of your personal information is important to us. We use appropriate technical and organizational measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and/or destruction. We also follow the Payment Card Industry Data Security Standard (“PCI-DSS”) in handling your credit card information. However, security risk is inherent in all internet and information technologies.<\/p>\n<p><mark class=\"hl\" id=\"temu-hl2\">We generally retain personal information as long as necessary to fulfill the purposes for which we collected it, as well as for the purposes of satisfying any applicable U.S. legal, accounting, or reporting requirements, to establish, exercise or defend legal claims, or for fraud prevention purposes.<\/mark> To determine the appropriate retention period for personal information, we may consider factors such as the amount, nature, and sensitivity of the personal information, the potential risk of harm from unauthorized use or disclosure of your personal information, the purposes for which we process your personal information and whether we can achieve those purposes through other means, and the applicable U.S. legal requirements.<\/p>\n<p>Data of Temu’s U.S. users will be stored in the infrastructure of cloud service providers in the U.S. As a global one-stop shopping destination, Temu may need to engage and share your personal information to various parties, including our service providers, as described in the “How and Why We Share Your Information” section. These parties may be located in countries or jurisdictions that have data protection laws that are different in some aspects from the laws of the country or jurisdiction in which you reside. When we transfer your personal information outside the country or jurisdiction in which you reside, we implement appropriate measures to ensure that your personal information will remain protected in accordance with this Privacy Policy and applicable laws.<\/p>",
+  "analysis": {
+   "summary": {
+    "tldr": "Temu collects personal data like account info, purchase history, and location. They share this data with affiliates, service providers, and third-party partners for ads and security. Data is kept until necessary and may be shared in business transactions.",
+    "data_in": [
+     "Account and profile info (phone, email, profile photo)",
+     "Order and payment details",
+     "Shipping and recipient info",
+     "Customer support communications",
+     "User-generated content (reviews, images)",
+     "Promotion and event participation info"
+    ],
+    "data_out": [
+     "Affiliates and subsidiaries",
+     "Service providers (customer support, analytics)",
+     "Payment processors",
+     "Advertising and analytics partners",
+     "Third parties designated by users",
+     "Business and marketing partners"
+    ],
+    "used_for": [
+     "Account creation and maintenance",
+     "Order processing and delivery",
+     "Improving and optimizing services",
+     "Fraud prevention and security",
+     "Compliance and legal obligations"
+    ],
+    "retention_and_rights": [
+     "Kept until necessary for service purposes",
+     "May be shared in business transactions",
+     "Users can opt out of marketing communications"
+    ]
+   },
+   "highlights": [
+    {
+     "criterion": "third_party_sharing",
+     "quote": "We share your personal information with third parties who provide services on our behalf or help us operate the Service or our business (e.g., hosting, information technology, customer support, content delivery, email delivery, order fulfillment and delivery, marketing, fraud detection, security and website analytics).",
+     "explanation": "Temu shares user data with various third parties for service and business operations, including marketing and fraud detection partners.",
+     "severity": "notable"
+    },
+    {
+     "criterion": "sensitive_data",
+     "quote": "When submitting a complaint or request through our customer support functions, you may choose to provide documentation, information, or photographs including health details, medical treatments, tests, reports, medications or other evidence for product-related injuries or health impacts.",
+     "explanation": "Temu collects sensitive health information when users contact customer support for complaints or requests.",
+     "severity": "concerning"
+    },
+    {
+     "criterion": "retention",
+     "quote": "We generally retain personal information as long as necessary to fulfill the purposes for which we collected it, as well as for the purposes of satisfying any applicable U.S. legal, accounting, or reporting requirements, to establish, exercise or defend legal claims, or for fraud prevention purposes.",
+     "explanation": "Temu retains user data for extended periods, including for legal and compliance purposes.",
+     "severity": "notable"
+    }
+   ]
+  },
+  "markFor": [
+   "temu-hl0",
+   "temu-hl1",
+   "temu-hl2"
+  ],
+  "model": "policy-qwen"
+ }
+};
+
+var CRITERION_LABELS = {
+  third_party_sharing: "Sharing with others",
+  sensitive_data: "Sensitive data",
+  vague_language: "Vague wording",
+  broad_permissions: "Broad permissions",
+  retention: "How long data is kept",
+  policy_changes: "Policy changes"
+};
+
+// Pick group: 
+var params = new URLSearchParams(location.search);
+var group = params.get("group");
+if (group !== "A" && group !== "B") group = Math.random() < 0.5 ? "A" : "B";
+
+// Pick policy:
+var policyId = params.get("policy");
+if (!POLICIES[policyId]) policyId = POLICY_POOL[Math.floor(Math.random() * POLICY_POOL.length)];
+var policy = POLICIES[policyId];
+var questions = QUESTIONS[policyId];
+
+var startTime, endTime;
+var readsPolicies = null;
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+// Fill in the app name and policy text.
+document.querySelectorAll(".appName").forEach(function (el) { el.textContent = policy.app; });
+document.getElementById("policyText").innerHTML = policy.html;
+
+// Build the AI summary (Group B only).
+if (group === "B") {
+  var a = policy.analysis, s = a.summary;
+  function list(title, items) {
+    return "<div><h4>" + title + "</h4><ul>" + items.map(function (b) { return "<li>" + esc(b) + "</li>"; }).join("") + "</ul></div>";
+  }
+  var h = "<h2>AI Summary</h2>" +
+    '<p class="aiNote">This summary was written by an AI. Highlighted text in the policy below shows the clauses it flagged.</p>' +
+    '<div class="tldr"><b>In short:</b> ' + esc(s.tldr) + "</div>" +
+    '<div class="grid">' +
+      list("What they collect", s.data_in) +
+      list("Who else gets it", s.data_out) +
+      list("Why they use it", s.used_for) +
+      list("How long they keep it & your choices", s.retention_and_rights) +
+    "</div>";
+  if (a.highlights.length) {
+    h += '<div class="watch"><h4>Things to watch</h4>';
+    a.highlights.forEach(function (hl, i) {
+      h += '<div class="flag ' + esc(hl.severity) + '"><span class="tag">' + esc(CRITERION_LABELS[hl.criterion] || hl.criterion) +
+        " · " + esc(hl.severity) + "</span><br>" + esc(hl.explanation) +
+        (policy.markFor[i] ? ' <a onclick="jumpTo(\'' + policy.markFor[i] + '\')">Show in policy ↓</a>' : "") + "</div>";
+    });
+    h += "</div>";
+  }
+  document.getElementById("summary").innerHTML = h;
+  document.getElementById("policyText").classList.add("showHighlights");
+  document.getElementById("aiQuestions").style.display = "block";
+} else {
+  document.getElementById("summary").style.display = "none";
+}
+
+function jumpTo(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  el.classList.add("flash");
+  setTimeout(function () { el.classList.remove("flash"); }, 1500);
+}
+
+// Build the questions on the page.
+var html = "";
+questions.forEach(function (q, i) {
+  html += '<div class="question"><p><b>' + (i + 1) + ". " + esc(q.text) + "</b></p>";
+  q.options.forEach(function (opt, j) {
+    html += '<label><input type="radio" name="q' + i + '" value="' + j + '"> ' + esc(opt) + "</label>";
+  });
+  html += "</div>";
+});
+document.getElementById("questions").innerHTML = html;
+
+function show(id) {
+  document.querySelectorAll(".page").forEach(function (p) { p.style.display = "none"; });
+  document.getElementById(id).style.display = (id === "quiz") ? "flex" : "block";
+  window.scrollTo(0, 0);
+}
+
+function submitPre() {
+  readsPolicies = getAnswer("readsPolicies");
+  if (readsPolicies === null) {
+    document.getElementById("preError").textContent = "Please choose an answer.";
+    return;
+  }
+  show("instructions");
+}
+
+function startQuiz() {
+  startTime = Date.now();
+  show("quiz");
+}
+
+function getAnswer(name) {
+  var checked = document.querySelector('input[name="' + name + '"]:checked');
+  return checked ? Number(checked.value) : null;
+}
+
+function submitQuiz() {
+  for (var i = 0; i < questions.length; i++) {
+    if (getAnswer("q" + i) === null) {
+      document.getElementById("quizError").textContent = "Please answer every question.";
+      return;
+    }
+  }
+  endTime = Date.now();
+  show("rating");
+}
+
+function finish() {
+  var difficulty = getAnswer("difficulty");
+  if (difficulty === null) {
+    document.getElementById("ratingError").textContent = "Please choose a rating.";
+    return;
+  }
+  var difficultyReason = document.getElementById("difficultyReason").value.trim();
+  if (!difficultyReason) {
+    document.getElementById("ratingError").textContent = "Please explain your rating.";
+    return;
+  }
+  var aiMoreLikely = null;
+  if (group === "B") {
+    aiMoreLikely = getAnswer("aiMoreLikely");
+    if (aiMoreLikely === null) {
+      document.getElementById("ratingError").textContent = "Please answer every question.";
+      return;
+    }
+  }
+
+  var score = 0, answers = [];
+  questions.forEach(function (q, i) {
+    var a = getAnswer("q" + i);
+    answers.push(a);
+    if (a === q.answer) score++;
+  });
+
+  var result = {
+    group: group,
+    policy: policyId,
+    readsPolicies: readsPolicies,
+    score: score,
+    total: questions.length,
+    timeSeconds: Math.round((endTime - startTime) / 1000),
+    difficulty: difficulty,
+    difficultyReason: difficultyReason,
+    aiMoreLikelyToRead: aiMoreLikely === null ? "" : aiMoreLikely,
+    answers: answers.join(","),
+    date: new Date().toISOString()
+  };
+  console.log("Result:", result);
+
+  if (GOOGLE_SHEET_URL) {
+    fetch(GOOGLE_SHEET_URL, {
+      method: "POST", mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(result)
+    });
+  }
+  show("done");
+}
+
+show("pre");
+</script>
+</body>
+</html>
